@@ -19,6 +19,7 @@ app.set("view engine", "ejs");
 import { ImagePool } from '@squoosh/lib';
 
 type EncodeOptions = {
+    path: string
     width?: number
 }
 
@@ -60,17 +61,20 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
 const validFiles = ['.jpg', '.png']
 
 app.get("/*", async (req, res) => {
-    const { url } = req
-    const mediaPath = path.join(__dirname, '..', 'media', decodeURI(url));
+    console.log({
+        path: req.path
+    })
+    const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
 
 
-    if (validFiles.includes(path.extname(url))) {
+    if (validFiles.includes(path.extname(req.path))) {
         if (!existsSync(mediaPath)) {
             res.redirect(301, '/')
             return
         }
 
-        const encoding = {
+        const encoding: EncodeOptions = {
+            path: req.path,
             width: parseInt(req.query.width as string ?? '1024')
         }
 
@@ -105,7 +109,7 @@ app.get("/*", async (req, res) => {
     console.log(app_url)
     res.render("index", {
         app_url,
-        path: url === '/' ? '' : url,
+        path: req.path === '/' ? '' : req.path,
         folders,
         files
     });
