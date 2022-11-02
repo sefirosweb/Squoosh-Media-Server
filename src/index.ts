@@ -2,15 +2,17 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import fs from 'fs/promises';
-import { existsSync } from 'fs';
+import { readdirSync, existsSync, lstatSync } from 'fs';
 import crypto from "crypto";
+const querystring = require('querystring')
 
 dotenv.config();
 const port = process.env.SERVER_PORT ?? 8080;
+const app_url = process.env.APP_URL ?? 'http://localhost:8080';
 const app = express();
 
 // Configure Express to use EJS
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(__dirname, "views", "pages"));
 app.set("view engine", "ejs");
 
 // @ts-ignore
@@ -55,24 +57,58 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
     })
 }
 
+const validFiles = ['.jpg', '.png']
+
 app.get("/*", async (req, res) => {
-    // res.render("index");
-    const query = req.query
-    console.log(query)
+    const { url } = req
+    const mediaPath = path.join(__dirname, '..', 'media', decodeURI(url));
 
-    const encoding = {
-        width: parseInt(req.query.width as string ?? '1024')
-    }
 
-    const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
-    const cachePath = path.join(__dirname, '..', 'cache', md5 + '.jpg');
-    if (existsSync(cachePath)) {
-        res.sendFile(cachePath)
+    if (validFiles.includes(path.extname(url))) {
+        if (!existsSync(mediaPath)) {
+            res.redirect(301, '/')
+            return
+        }
+
+        const encoding = {
+            width: parseInt(req.query.width as string ?? '1024')
+        }
+
+        const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
+        const cachePath = path.join(__dirname, '..', 'cache', md5 + '.jpg');
+        if (existsSync(cachePath)) {
+            res.sendFile(cachePath)
+            return
+        }
+
+        const filePath = await compress(encoding, md5)
+        res.sendFile(filePath)
         return
     }
 
-    const filePath = await compress(encoding, md5)
-    res.sendFile(filePath)
+    if (!existsSync(mediaPath) || !lstatSync(mediaPath).isDirectory()) {
+        res.redirect(301, '/')
+        return
+    }
+
+    console.log(mediaPath)
+    console.log(existsSync(mediaPath))
+    console.log(!lstatSync(mediaPath).isDirectory())
+
+    const folders = readdirSync(mediaPath, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+
+    const files = readdirSync(mediaPath, { withFileTypes: true })
+        .filter(dirent => !dirent.isDirectory())
+        .filter(dirent => validFiles.includes(path.extname(dirent.name)))
+
+    console.log(app_url)
+    res.render("index", {
+        app_url,
+        path: url === '/' ? '' : url,
+        folders,
+        files
+    });
 });
 
 app.listen(port, () => {
