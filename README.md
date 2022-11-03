@@ -1,5 +1,7 @@
 # Squoosh-Media-Server
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sefirosweb)
+
 Project based on [Squoosh](https://github.com/GoogleChromeLabs/squoosh) for serving a static files, these files can be resized and optimized by url request
 
 The idea is to do something similar to image providers that compress and optimize images for you, It is a minimalist solution of these services,
