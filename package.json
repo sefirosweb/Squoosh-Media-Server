@@ -10,7 +10,8 @@
     "tsc": "tsc",
     "build": "npm-run-all clean lint tsc copy-assets",
     "dev:start": "npm-run-all build start",
-    "dev": "nodemon --inspect=0.0.0.0:9229 --watch src -e ts,ejs --exec npm run dev:start",
+    "dev:old": "nodemon --inspect=0.0.0.0:9229 --watch src -e ts,ejs --exec npm run dev:start",
+    "dev": "nodemon src/index.ts --inspect=0.0.0.0:9229",
     "start": "node .",
     "dockerrun": "docker run --rm -it --name MediaServer -v ~/.gitconfig:/etc/gitconfig -p 8080:8080 -p 9229:9229 -v $PWD:/home/app -w /home/app -u node node:16.13-bullseye /bin/bash",
     "test": "echo \"Error: no test specified\" && exit 1"
