@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { existsSync } from "fs"
 import crypto from "crypto";
 import compress from "./compress"
-import { EncodeOptions } from "./types"
+import { Codecs, EncodeOptions, validFiles } from "./types"
 import path from "path";
 
 export default async (req: Request, res: Response, mediaPath: string) => {
@@ -23,15 +23,39 @@ export default async (req: Request, res: Response, mediaPath: string) => {
     if (typeof req.query.width === "string") {
         encoding.width = parseInt(req.query.width, 10);
     }
+    if (typeof req.query.height === "string") {
+        encoding.height = parseInt(req.query.height, 10);
+    }
+    if (typeof req.query.quality === "string") {
+        encoding.quality = parseInt(req.query.quality, 10);
+    }
+
+    if (isCodec(req.query.encode)) {
+        encoding.encode = req.query.encode;
+    }
 
 
     const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
-    const cachePath = path.join(__dirname, '..', 'cache', md5 + '.jpg');
-    if (existsSync(cachePath)) {
-        res.sendFile(cachePath)
-        return
-    }
+
+    let found = false
+    validFiles.every(validFile => {
+        const cachePath = path.join(__dirname, '..', 'cache', md5 + validFile);
+        if (existsSync(cachePath)) {
+            res.sendFile(cachePath)
+            found = true
+            return false
+        }
+        return true
+    })
+
+
+    if (found) return
+
 
     const filePath = await compress(encoding, md5)
     res.sendFile(filePath)
+}
+
+function isCodec(req: any): req is Codecs {
+    return typeof req === "string" && Object.values(Codecs).includes(req as Codecs)
 }

@@ -12,10 +12,8 @@ const app = express();
 app.set("views", path.join(__dirname, "views", "pages"));
 app.set("view engine", "ejs");
 
-import { Breadcrumb } from "./types";
+import { Breadcrumb, validFiles } from "./types";
 import validateFile from "./validateFile";
-
-const validFiles = ['.jpg', '.png']
 
 app.get("/*", async (req: Request, res: Response) => {
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));

@@ -2,7 +2,7 @@ import path from "path";
 import fs from 'fs/promises';
 // @ts-ignore
 import { ImagePool } from '@squoosh/lib';
-import { EncodeOptions } from "./types";
+import { Codecs, EncodeOptions } from "./types";
 
 
 export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
@@ -12,25 +12,40 @@ export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
         const cachePath = path.join(__dirname, '..', 'cache', md5);
         try {
             const image = imagePool.ingestImage(filePath);
+            const codec = encodeOptions.encode ?? Codecs.mozjpeg
 
             await image.preprocess({
                 resize: {
-                    enabled: true,
                     width: encodeOptions?.width ?? 1024,
+                    height: encodeOptions?.height ?? null,
                 },
             });
 
-            await image.encode({
-                mozjpeg: {
-                    quality: 75,
-                },
-                avif: {
+            const encode: any = {};
+
+            if (codec === Codecs.avif) {
+                encode.avif = {
                     cqLevel: 10,
-                },
-                jxl: {},
-            });
+                }
+            }
 
-            const { extension, binary } = await image.encodedWith.mozjpeg;
+            if (codec === Codecs.jxl) {
+                encode.jxl = {}
+            }
+
+            if (codec === Codecs.webp) {
+                encode.webp = {}
+            }
+
+            if (codec === Codecs.mozjpeg) {
+                encode.mozjpeg = {
+                    quality: encodeOptions.quality ?? 75,
+                }
+            }
+
+            await image.encode(encode);
+
+            const { extension, binary } = await image.encodedWith[codec];
             await fs.writeFile(`${cachePath}.${extension}`, binary);
             await imagePool.close();
             resolve(`${cachePath}.${extension}`)

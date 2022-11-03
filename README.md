@@ -10,13 +10,20 @@ To upload the image files you must provide it manually (via ftp or own developme
 
 Example:
 
-https://yourdomain.com/path/image.jpg?width=500
+https://yourdomain.com/path/image.jpg?width=400&encode=webp
 
 - In the case that you provide information in the url query with `?` the program will optimize the image according to the data sent and will automatically cache the image in the .cache folder, so the next request will not have to process it
 
 - In the event that you do not provide data in the query, it will send the original size directly
 
 ![image](https://raw.githubusercontent.com/sefirosweb/Squoosh-Media-Server/master/docs/how_to.gif)
+
+## Current valid parameters:
+
+- encode `mozjpeg | avif | jxl | webp` default codec: `mozjpeg`
+- width
+- height `Is is not setted the image is preserve the original ratio`
+- quality `only for mozjpeg`
 
 ## Deploy to production
 
@@ -42,3 +49,9 @@ docker run --rm -it --name MediaServer -v ~/.gitconfig:/etc/gitconfig -p 8080:80
 npm install
 npm run dev
 ```
+
+### TODOS
+
+- Add batch to compress and cache the files
+- Add search input to find the images or folder
+- Improve to Vue instead EJS
