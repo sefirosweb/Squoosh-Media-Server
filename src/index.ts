@@ -4,7 +4,6 @@ import path from "path";
 import fs from 'fs/promises';
 import { readdirSync, existsSync, lstatSync } from 'fs';
 import crypto from "crypto";
-const querystring = require('querystring')
 
 dotenv.config();
 const port = process.env.SERVER_PORT ?? 8080;
@@ -61,6 +60,7 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
 const validFiles = ['.jpg', '.png']
 
 app.get("/*", async (req, res) => {
+    console.log(new Date)
     console.log({
         path: req.path
     })
