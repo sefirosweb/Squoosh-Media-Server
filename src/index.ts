@@ -22,6 +22,12 @@ type EncodeOptions = {
     width?: number
 }
 
+type Breadcrumb = {
+    path: string,
+    title: string,
+    active: boolean
+}
+
 const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
     return new Promise(async (resolve, reject) => {
         const imagePool = new ImagePool(1);
@@ -60,11 +66,11 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
 const validFiles = ['.jpg', '.png']
 
 app.get("/*", async (req, res) => {
-    console.log(new Date)
-    console.log({
-        path: req.path,
-        query: req.query,
-    })
+    // console.log(new Date)
+    // console.log({
+    //     path: req.path,
+    //     query: req.query,
+    // })
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
 
 
@@ -103,10 +109,35 @@ app.get("/*", async (req, res) => {
         .filter(dirent => !dirent.isDirectory())
         .filter(dirent => validFiles.includes(path.extname(dirent.name)))
 
+    const relativePath = req.path === '/' ? '' : req.path
+    let breadcrumbAcumulate = ''
+    const breadcrumb: Array<Breadcrumb> = relativePath
+        .split("/")
+        .filter(p => p !== '')
+        .map((path) => {
+            breadcrumbAcumulate += path + '/'
+            return {
+                title: path,
+                path: breadcrumbAcumulate,
+                active: false
+            }
+        })
+
+    breadcrumb.unshift({
+        title: 'home',
+        path: '',
+        active: false
+    })
+
+    if (breadcrumb.length !== 0) {
+        breadcrumb[breadcrumb.length - 1].active = true
+    }
+
     res.render("layout", {
         app_url,
-        path: req.path === '/' ? '' : req.path,
+        path: relativePath,
         folders,
+        foldersArray: breadcrumb,
         files
     });
 });
