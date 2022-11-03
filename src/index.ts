@@ -1,9 +1,7 @@
+import path from "path";
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
-import path from "path";
-import fs from 'fs/promises';
 import { readdirSync, existsSync, lstatSync } from 'fs';
-import crypto from "crypto";
 
 dotenv.config();
 const port = process.env.SERVER_PORT ?? 8080;
@@ -14,54 +12,8 @@ const app = express();
 app.set("views", path.join(__dirname, "views", "pages"));
 app.set("view engine", "ejs");
 
-// @ts-ignore
-import { ImagePool } from '@squoosh/lib';
-
-type EncodeOptions = {
-    path: string
-    width?: number
-}
-
-type Breadcrumb = {
-    path: string,
-    title: string,
-    active: boolean
-}
-
-const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
-    return new Promise(async (resolve, reject) => {
-        const imagePool = new ImagePool(1);
-        const filePath = path.join(__dirname, '..', 'media', 'photo.jpg');
-        const cachePath = path.join(__dirname, '..', 'cache', md5);
-        try {
-            const image = imagePool.ingestImage(filePath);
-
-            await image.preprocess({
-                resize: {
-                    enabled: true,
-                    width: encodeOptions?.width ?? 1024,
-                },
-            });
-
-            await image.encode({
-                mozjpeg: {
-                    quality: 75,
-                },
-                avif: {
-                    cqLevel: 10,
-                },
-                jxl: {},
-            });
-
-            const { extension, binary } = await image.encodedWith.mozjpeg;
-            await fs.writeFile(`${cachePath}.${extension}`, binary);
-            await imagePool.close();
-            resolve(`${cachePath}.${extension}`)
-        } catch {
-            reject()
-        }
-    })
-}
+import { Breadcrumb } from "./types";
+import validateFile from "./validateFile";
 
 const validFiles = ['.jpg', '.png']
 
@@ -69,34 +21,7 @@ app.get("/*", async (req: Request, res: Response) => {
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
 
     if (validFiles.includes(path.extname(req.path))) {
-        if (!existsSync(mediaPath)) {
-            res.redirect(301, '/')
-            return
-        }
-
-        if (Object.keys(req.query).length === 0) {
-            res.sendFile(mediaPath)
-            return
-        }
-
-        const encoding: EncodeOptions = {
-            path: req.path
-        }
-
-        if (typeof req.query.width === "string") {
-            encoding.width = parseInt(req.query.width, 10);
-        }
-
-
-        const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
-        const cachePath = path.join(__dirname, '..', 'cache', md5 + '.jpg');
-        if (existsSync(cachePath)) {
-            res.sendFile(cachePath)
-            return
-        }
-
-        const filePath = await compress(encoding, md5)
-        res.sendFile(filePath)
+        validateFile(req, res, mediaPath)
         return
     }
 
