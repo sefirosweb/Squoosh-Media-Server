@@ -8,12 +8,37 @@ The idea is to do something similar to image providers that compress and optimiz
 
 To upload the image files you must provide it manually (via ftp or own development)
 
-Exampe:
+Example:
 
 https://yourdomain.com/path/image.jpg?width=500
 
-- In the case that you provide information in the url query with ? the program will optimize the image according to the data sent and will automatically cache the image in the .cache folder, so that the next request will not have to recreate it
+- In the case that you provide information in the url query with `?` the program will optimize the image according to the data sent and will automatically cache the image in the .cache folder, so the next request will not have to process it
 
 - In the event that you do not provide data in the query, it will send the original size directly
 
 ![image](https://raw.githubusercontent.com/sefirosweb/Squoosh-Media-Server/master/docs/how_to.gif)
+
+## Deploy to production
+
+I recomend you to use docker to avoid node version incompatibility, because it supports until Node 16.X
+
+1º Clone the repository: `git clone https://github.com/sefirosweb/Squoosh-Media-Server.git`
+
+2º Build the docker image: `docker-compose build`
+
+4º Create and edit .env file, you need to set the port and app_url
+
+5º Start docker compose: `docker-compose up -d`
+
+## Develop
+
+Its is not mandatory but you can execute node to develop:
+
+```
+docker run --rm -it --name MediaServer -v ~/.gitconfig:/etc/gitconfig -p 8080:8080 -p 9229:9229 -v $PWD:/home/app -w /home/app -u node node:16.13-bullseye /bin/bash
+```
+
+```
+npm install
+npm run dev
+```

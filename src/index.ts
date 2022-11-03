@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, { Request, Response } from "express";
 import path from "path";
 import fs from 'fs/promises';
 import { readdirSync, existsSync, lstatSync } from 'fs';
@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 dotenv.config();
 const port = process.env.SERVER_PORT ?? 8080;
-const app_url = process.env.APP_URL ?? `http://localhost:${port}`;
+const appUrl = process.env.APP_URL ?? `http://localhost:${port}`;
 const app = express();
 
 // Configure Express to use EJS
@@ -65,7 +65,7 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
 
 const validFiles = ['.jpg', '.png']
 
-app.get("/*", async (req, res) => {
+app.get("/*", async (req: Request, res: Response) => {
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
 
     if (validFiles.includes(path.extname(req.path))) {
@@ -80,9 +80,13 @@ app.get("/*", async (req, res) => {
         }
 
         const encoding: EncodeOptions = {
-            path: req.path,
-            width: parseInt(req.query.width as string ?? '252')
+            path: req.path
         }
+
+        if (typeof req.query.width === "string") {
+            encoding.width = parseInt(req.query.width, 10);
+        }
+
 
         const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
         const cachePath = path.join(__dirname, '..', 'cache', md5 + '.jpg');
@@ -110,13 +114,13 @@ app.get("/*", async (req, res) => {
 
     const relativePath = req.path === '/' ? '' : req.path
     let breadcrumbAcumulate = ''
-    const breadcrumb: Array<Breadcrumb> = relativePath
+    const breadcrumb: Breadcrumb[] = relativePath
         .split("/")
         .filter(p => p !== '')
-        .map((path) => {
-            breadcrumbAcumulate += path + '/'
+        .map((title) => {
+            breadcrumbAcumulate += title + '/'
             return {
-                title: path,
+                title,
                 path: breadcrumbAcumulate,
                 active: false
             }
@@ -133,7 +137,7 @@ app.get("/*", async (req, res) => {
     }
 
     res.render("layout", {
-        app_url,
+        appUrl,
         path: relativePath,
         folders,
         foldersArray: breadcrumb,
@@ -143,5 +147,5 @@ app.get("/*", async (req, res) => {
 
 app.listen(port, () => {
     // tslint:disable-next-line:no-console
-    console.log(`server started at ${app_url}`);
+    console.log(`server started at ${appUrl}`);
 });
