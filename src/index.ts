@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 dotenv.config();
 const port = process.env.SERVER_PORT ?? 8080;
-const app_url = process.env.APP_URL ?? 'http://localhost:8080';
+const app_url = process.env.APP_URL ?? `http://localhost:${port}`;
 const app = express();
 
 // Configure Express to use EJS
@@ -62,7 +62,8 @@ const validFiles = ['.jpg', '.png']
 app.get("/*", async (req, res) => {
     console.log(new Date)
     console.log({
-        path: req.path
+        path: req.path,
+        query: req.query,
     })
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
 
@@ -75,7 +76,7 @@ app.get("/*", async (req, res) => {
 
         const encoding: EncodeOptions = {
             path: req.path,
-            width: parseInt(req.query.width as string ?? '1024')
+            width: parseInt(req.query.width as string ?? '252')
         }
 
         const md5 = crypto.createHash('md5').update(JSON.stringify(encoding)).digest("hex")
@@ -95,10 +96,6 @@ app.get("/*", async (req, res) => {
         return
     }
 
-    console.log(mediaPath)
-    console.log(existsSync(mediaPath))
-    console.log(!lstatSync(mediaPath).isDirectory())
-
     const folders = readdirSync(mediaPath, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
 
@@ -106,8 +103,7 @@ app.get("/*", async (req, res) => {
         .filter(dirent => !dirent.isDirectory())
         .filter(dirent => validFiles.includes(path.extname(dirent.name)))
 
-    console.log(app_url)
-    res.render("index", {
+    res.render("layout", {
         app_url,
         path: req.path === '/' ? '' : req.path,
         folders,
@@ -117,5 +113,5 @@ app.get("/*", async (req, res) => {
 
 app.listen(port, () => {
     // tslint:disable-next-line:no-console
-    console.log(`server started at http://localhost:${port}`);
+    console.log(`server started at ${app_url}`);
 });

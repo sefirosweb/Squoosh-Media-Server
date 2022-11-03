@@ -1,0 +1,17 @@
+<div class="row">
+  <% files.forEach(function(file) { %>
+
+  <div class="col-sm-6 col-md-4 col-lg-3 col-xl-2 p-2">
+    <div class="ratio ratio-16x9">
+      <div>
+        <img
+          src="<%= `${app_url}${path}/${file.name}` %>"
+          class="rounded img-fluid spinnerWhileLoad"
+          alt="<%= file.name %>"
+        />
+      </div>
+    </div>
+  </div>
+
+  <% }); %>
+</div>

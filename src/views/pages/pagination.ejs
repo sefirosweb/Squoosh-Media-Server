@@ -1,0 +1,13 @@
+<div class="container">
+  <h1>This is great</h1>
+  <p>Welcome to templating using EJS</p>
+  <div><%= path %></div>
+  <ul>
+    <% folders.forEach(function(folder) { %>
+    <li><a href="<%= `${app_url}${path}/${folder.name}` %>"><%= folder.name %></a></li>
+    <% }); %>
+  </ul>
+
+  <h2>Images</h2>
+  <%- include('../partials/gridImages'); %>
+</div>
