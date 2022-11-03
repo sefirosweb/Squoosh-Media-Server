@@ -66,17 +66,16 @@ const compress = (encodeOptions: EncodeOptions, md5: string): Promise<string> =>
 const validFiles = ['.jpg', '.png']
 
 app.get("/*", async (req, res) => {
-    // console.log(new Date)
-    // console.log({
-    //     path: req.path,
-    //     query: req.query,
-    // })
     const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
-
 
     if (validFiles.includes(path.extname(req.path))) {
         if (!existsSync(mediaPath)) {
             res.redirect(301, '/')
+            return
+        }
+
+        if (Object.keys(req.query).length === 0) {
+            res.sendFile(mediaPath)
             return
         }
 
