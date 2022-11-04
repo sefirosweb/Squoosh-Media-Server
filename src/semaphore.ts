@@ -1,6 +1,6 @@
 
 export default class Semaphore {
-    currentRequests: Array<any>
+    currentRequests: any[]
     runningRequests: number
     maxConcurrentRequests: number
 
@@ -27,9 +27,9 @@ export default class Semaphore {
         if (!this.currentRequests.length) {
             return;
         } else if (this.runningRequests < this.maxConcurrentRequests) {
-            let { resolve, reject, fnToCall, args } = this.currentRequests.shift();
+            const { resolve, reject, fnToCall, args } = this.currentRequests.shift();
             this.runningRequests++;
-            let req = fnToCall(...args);
+            const req = fnToCall(...args);
             req.then((res: any) => resolve(res))
                 .catch((err: any) => reject(err))
                 .finally(() => {

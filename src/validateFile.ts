@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import Semaphore from "./semaphore";
 
 dotenv.config();
-const concurrent = process.env.MAX_CONCURRENT_COMPRESION ? parseInt(process.env.MAX_CONCURRENT_COMPRESION) : 1;
+const concurrent = process.env.MAX_CONCURRENT_COMPRESION ? parseInt(process.env.MAX_CONCURRENT_COMPRESION, 10) : 1;
 const throttler = new Semaphore(concurrent);
 
 export default async (reqPath: string, query: any, res: Response, mediaPath: string) => {
