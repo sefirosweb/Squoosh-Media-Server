@@ -8,7 +8,7 @@ import { Codecs, EncodeOptions } from "./types";
 export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
     return new Promise(async (resolve, reject) => {
         const imagePool = new ImagePool(1);
-        const filePath = path.join(__dirname, '..', 'media', 'photo.jpg');
+        const filePath = path.join(__dirname, '..', 'media', encodeOptions.path);
         const cachePath = path.join(__dirname, '..', 'cache', md5);
         try {
             const image = imagePool.ingestImage(filePath);
@@ -49,8 +49,8 @@ export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
             await fs.writeFile(`${cachePath}.${extension}`, binary);
             await imagePool.close();
             resolve(`${cachePath}.${extension}`)
-        } catch {
-            reject()
+        } catch (e) {
+            reject(e)
         }
     })
 }

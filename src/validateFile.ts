@@ -52,8 +52,13 @@ export default async (req: Request, res: Response, mediaPath: string) => {
     if (found) return
 
 
-    const filePath = await compress(encoding, md5)
-    res.sendFile(filePath)
+    try {
+        const filePath = await compress(encoding, md5)
+        res.sendFile(filePath)
+    } catch {
+        const fileError = path.join(__dirname, 'views', 'error-file.png');
+        res.sendFile(fileError)
+    }
 }
 
 function isCodec(req: any): req is Codecs {
