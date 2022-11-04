@@ -16,10 +16,11 @@ import { Breadcrumb, validFiles } from "./types";
 import validateFile from "./validateFile";
 
 app.get("/*", async (req: Request, res: Response) => {
-    const mediaPath = path.join(__dirname, '..', 'media', decodeURI(req.path));
+    const reqPath = decodeURI(req.path)
+    const mediaPath = path.join(__dirname, '..', 'media', reqPath);
 
-    if (validFiles.includes(path.extname(req.path))) {
-        validateFile(req, res, mediaPath)
+    if (validFiles.includes(path.extname(reqPath))) {
+        validateFile(reqPath, req.query, res, mediaPath)
         return
     }
 
@@ -35,7 +36,7 @@ app.get("/*", async (req: Request, res: Response) => {
         .filter(dirent => !dirent.isDirectory())
         .filter(dirent => validFiles.includes(path.extname(dirent.name)))
 
-    const relativePath = req.path === '/' ? '' : req.path
+    const relativePath = reqPath === '/' ? '' : reqPath
     let breadcrumbAcumulate = ''
     const breadcrumb: Breadcrumb[] = relativePath
         .split("/")

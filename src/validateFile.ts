@@ -5,33 +5,33 @@ import compress from "./compress"
 import { Codecs, EncodeOptions, validFiles } from "./types"
 import path from "path";
 
-export default async (req: Request, res: Response, mediaPath: string) => {
+export default async (reqPath: string, query: any, res: Response, mediaPath: string) => {
     if (!existsSync(mediaPath)) {
         res.redirect(301, '/')
         return
     }
 
-    if (Object.keys(req.query).length === 0) {
+    if (Object.keys(query).length === 0) {
         res.sendFile(mediaPath)
         return
     }
 
     const encoding: EncodeOptions = {
-        path: req.path
+        path: reqPath
     }
 
-    if (typeof req.query.width === "string") {
-        encoding.width = parseInt(req.query.width, 10);
+    if (typeof query.width === "string") {
+        encoding.width = parseInt(query.width, 10);
     }
-    if (typeof req.query.height === "string") {
-        encoding.height = parseInt(req.query.height, 10);
+    if (typeof query.height === "string") {
+        encoding.height = parseInt(query.height, 10);
     }
-    if (typeof req.query.quality === "string") {
-        encoding.quality = parseInt(req.query.quality, 10);
+    if (typeof query.quality === "string") {
+        encoding.quality = parseInt(query.quality, 10);
     }
 
-    if (isCodec(req.query.encode)) {
-        encoding.encode = req.query.encode;
+    if (isCodec(query.encode)) {
+        encoding.encode = query.encode;
     }
 
 
@@ -61,6 +61,6 @@ export default async (req: Request, res: Response, mediaPath: string) => {
     }
 }
 
-function isCodec(req: any): req is Codecs {
-    return typeof req === "string" && Object.values(Codecs).includes(req as Codecs)
+function isCodec(encode: any): encode is Codecs {
+    return typeof encode === "string" && Object.values(Codecs).includes(encode as Codecs)
 }
