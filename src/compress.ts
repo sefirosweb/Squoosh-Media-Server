@@ -48,8 +48,12 @@ export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
             const { extension, binary } = await image.encodedWith[codec];
             await fs.writeFile(`${cachePath}.${extension}`, binary);
             await imagePool.close();
+            // tslint:disable-next-line:no-console
+            console.log(`Compresión completed: ${cachePath}.${extension}`)
             resolve(`${cachePath}.${extension}`)
         } catch (e) {
+            // tslint:disable-next-line:no-console
+            console.error(e)
             reject(e)
         }
     })

@@ -17,6 +17,8 @@ import validateFile from "./validateFile";
 
 app.get("/*", async (req: Request, res: Response) => {
     const reqPath = decodeURI(req.path)
+    // tslint:disable-next-line:no-console
+    console.log(reqPath)
     const mediaPath = path.join(__dirname, '..', 'media', reqPath);
 
     if (validFiles.includes(path.extname(reqPath))) {

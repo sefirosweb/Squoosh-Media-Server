@@ -1,4 +1,4 @@
-import { Request, Response } from "express"
+import { Response } from "express"
 import { existsSync } from "fs"
 import crypto from "crypto";
 import compress from "./compress"
