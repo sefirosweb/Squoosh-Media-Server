@@ -4,6 +4,12 @@ import crypto from "crypto";
 import compress from "./compress"
 import { Codecs, EncodeOptions, validFiles } from "./types"
 import path from "path";
+import dotenv from "dotenv";
+import Semaphore from "./semaphore";
+
+dotenv.config();
+const concurrent = process.env.MAX_CONCURRENT_COMPRESION ? parseInt(process.env.MAX_CONCURRENT_COMPRESION) : 1;
+const throttler = new Semaphore(concurrent);
 
 export default async (reqPath: string, query: any, res: Response, mediaPath: string) => {
     if (!existsSync(mediaPath)) {
@@ -53,7 +59,7 @@ export default async (reqPath: string, query: any, res: Response, mediaPath: str
 
 
     try {
-        const filePath = await compress(encoding, md5)
+        const filePath = await throttler.callFunction(() => compress(encoding, md5))
         res.sendFile(filePath)
     } catch {
         const fileError = path.join(__dirname, 'views', 'error-file.png');

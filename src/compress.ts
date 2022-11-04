@@ -13,7 +13,8 @@ export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
         try {
             const image = imagePool.ingestImage(filePath);
             const codec = encodeOptions.encode ?? Codecs.mozjpeg
-
+            // tslint:disable-next-line:no-console
+            console.log('Compresion start ', encodeOptions.path)
             await image.preprocess({
                 resize: {
                     width: encodeOptions?.width ?? 1024,
@@ -49,7 +50,7 @@ export default (encodeOptions: EncodeOptions, md5: string): Promise<string> => {
             await fs.writeFile(`${cachePath}.${extension}`, binary);
             await imagePool.close();
             // tslint:disable-next-line:no-console
-            console.log(`Compresión completed: ${cachePath}.${extension}`)
+            console.log(`Compresion completed: ${encodeOptions.path}`)
             resolve(`${cachePath}.${extension}`)
         } catch (e) {
             // tslint:disable-next-line:no-console
